@@ -387,11 +387,7 @@ function wp_blog_series_register_widget() {
     register_widget('WP_Blog_Series_Widget');
 }
 add_action('widgets_init', 'wp_blog_series_register_widget');
-
-function wp_blog_series_register_widget() {
-    register_widget('WP_Blog_Series_Widget');
-}
-add_action('widgets_init', 'wp_blog_series_register_widget');
+ 
 
 ?>
 
