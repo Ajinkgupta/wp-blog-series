@@ -3,7 +3,7 @@
 /*
 Plugin Name: WP Blog Series
 Plugin URI: https://www.doubtly.in/
-Description: This plugin is used to create a post series.
+Description: This plugin is used to create a blog series.
 Version: 1.0
 Author: Ajink Gupta
 */
@@ -12,12 +12,12 @@ function wp_blog_series_custom_post_type()
 {
     register_post_type("wp-blog-series", array(
         "labels" => array(
-            "name" => __("Post Series"),
-            "singular_name" => __("Post Series")
+            "name" => __("Blog Series"),
+            "singular_name" => __("Blog Series")
         ),
         "public" => true,
         "has_archive" => true,
-        "rewrite" => array("slug" => "post-series"),
+        "rewrite" => array("slug" => "blog-series"),
         "supports" => array("editor", "title", "excerpt", "thumbnail", "comments"),
         "capability_type" => "post",
         "publicly_queryable" => true,
@@ -79,7 +79,7 @@ function wp_blog_series_meta_box_markup($object)
 
 function wp_blog_series_custom_meta_box()
 {
-    add_meta_box("wp-blog-series", "Post Series", "wp_blog_series_meta_box_markup", "post", "side", "low", null);
+    add_meta_box("wp-blog-series", "Blog Series", "wp_blog_series_meta_box_markup", "post", "side", "low", null);
 }
 
 add_action("add_meta_boxes", "wp_blog_series_custom_meta_box");
@@ -124,7 +124,7 @@ function wp_blog_series_save_custom_meta_box($post_id, $post, $update)
 
 add_action("save_post", "wp_blog_series_save_custom_meta_box", 10, 3);
 
-/* Store WordPress posts and Post Series CTY relations as WordPress Settings. */
+/* Store WordPress posts and Blog Series CTY relations as WordPress Settings. */
 
 function wp_blog_series_save_settings($series_id, $serial_number, $post_id)
 {
@@ -180,7 +180,7 @@ function wp_blog_series_content_filter($content)
     $post_series_list = get_option("post_series_" . get_the_ID() . "_ids", "");
     $post_series_list_array = explode(',', $post_series_list);
 
-    $post_series_serial_number = array();
+    $post_series_serial_number = array ();
 
     foreach ($post_series_list_array as $value) {
         $serial_number = get_post_meta($value, "wp-blog-series-serial-number", true);
@@ -283,3 +283,116 @@ function wp_blog_series_enqueue_styles() {
 }
 
 add_action('wp_enqueue_scripts', 'wp_blog_series_enqueue_styles');
+
+/* Sorting Categories Page in Ascending Order */
+
+function wp_blog_series_category_posts_order($query) {
+    if ($query->is_category()) {
+        $query->set('order', 'ASC');
+    }
+}
+add_action('pre_get_posts', 'wp_blog_series_category_posts_order');
+
+/* Widget to Display Blog Series Posts in a Category */
+
+class WP_Blog_Series_Widget extends WP_Widget {
+
+    public function __construct() {
+        parent::__construct(
+            'wp_blog_series_widget',
+            __('Blog Series Widget', 'text_domain'),
+            array(
+                'description' => __('Display all articles of the current post series or category in ascending order.', 'text_domain'),
+            )
+        );
+    }
+
+    public function widget($args, $instance) {
+        global $post;
+
+        $title = apply_filters('widget_title', $instance['title']);
+        $category_id = $instance['category_id'];
+
+        echo $args['before_widget'];
+        if (!empty($title)) {
+            echo $args['before_title'] . $title . $args['after_title'];
+        }
+
+        // Get current post's series ID
+        $series_id = get_post_meta($post->ID, "wp-blog-series-id", true);
+
+        // If the current post has a series ID, display posts from that series
+        if (!empty($series_id)) {
+            $post_series_list = get_option("post_series_" . $series_id . "_ids", "");
+            $post_series_list_array = explode(',', $post_series_list);
+
+            $html = '<ul>';
+            foreach ($post_series_list_array as $post_id) {
+                $html .= '<li><a href="' . get_permalink($post_id) . '">' . get_the_title($post_id) . '</a></li>';
+            }
+            $html .= '</ul>';
+
+            echo $html;
+        } elseif (!empty($category_id)) { // If the current post doesn't belong to a series, display posts from the specified category
+            $args = array(
+                'category' => $category_id,
+                'orderby' => 'title',
+                'order' => 'ASC',
+            );
+            $posts_query = new WP_Query($args);
+
+            if ($posts_query->have_posts()) {
+                $html = '<ul>';
+                while ($posts_query->have_posts()) {
+                    $posts_query->the_post();
+                    $html .= '<li><a href="' . get_permalink() . '">' . get_the_title() . '</a></li>';
+                }
+                $html .= '</ul>';
+
+                echo $html;
+            }
+
+            wp_reset_postdata();
+        }
+
+        echo $args['after_widget'];
+    }
+
+    public function form($instance) {
+        $title = isset($instance['title']) ? $instance['title'] : '';
+        $category_id = isset($instance['category_id']) ? $instance['category_id'] : '';
+
+        // Widget Title
+        echo '<p>';
+        echo '<label for="' . $this->get_field_id('title') . '">' . __('Title:') . '</label>';
+        echo '<input class="widefat" id="' . $this->get_field_id('title') . '" name="' . $this->get_field_name('title') . '" type="text" value="' . esc_attr($title) . '">';
+        echo '</p>';
+
+        // Category
+        echo '<p>';
+        echo '<label for="' . $this->get_field_id('category_id') . '">' . __('Category ID:') . '</label>';
+        echo '<input class="widefat" id="' . $this->get_field_id('category_id') . '" name="' . $this->get_field_name('category_id') . '" type="text" value="' . esc_attr($category_id) . '">';
+        echo '</p>';
+    }
+
+    public function update($new_instance, $old_instance) {
+        $instance = array();
+        $instance['title'] = (!empty($new_instance['title'])) ? strip_tags($new_instance['title']) : '';
+        $instance['category_id'] = (!empty($new_instance['category_id'])) ? strip_tags($new_instance['category_id']) : '';
+        return $instance;
+    }
+}
+
+function wp_blog_series_register_widget() {
+    register_widget('WP_Blog_Series_Widget');
+}
+add_action('widgets_init', 'wp_blog_series_register_widget');
+
+function wp_blog_series_register_widget() {
+    register_widget('WP_Blog_Series_Widget');
+}
+add_action('widgets_init', 'wp_blog_series_register_widget');
+
+?>
+
+
