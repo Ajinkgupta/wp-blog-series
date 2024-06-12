@@ -1,0 +1,87 @@
+/* wp-blog-series.css */
+
+.wp-blog-series {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.wp-blog-series li {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    padding: 20px;
+    transition: transform 0.3s ease;
+}
+
+.wp-blog-series li:hover {
+    transform: translateY(-5px);
+}
+
+.wp-blog-series h3 {
+    font-size: 1.5em;
+    margin: 0 0 10px;
+}
+
+.wp-blog-series h3 a {
+    text-decoration: none;
+    color: #333;
+    transition: color 0.3s ease;
+}
+
+.wp-blog-series h3 a:hover {
+    color: #0073aa;
+}
+
+.wp-blog-series-box1 {
+    float: left;
+    margin-right: 20px;
+    border-radius: 10px;
+    overflow: hidden;
+    width: 150px;
+    height: 150px;
+}
+
+.wp-blog-series-box1 img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.wp-blog-series-box2 {
+    overflow: hidden;
+}
+
+.wp-blog-series-box2 p {
+    margin: 0;
+    color: #666;
+    line-height: 1.6;
+}
+
+.clear {
+    clear: both;
+}
+
+.wp-blog-series-post-content {
+    background: #f9f9f9;
+    border-radius: 10px;
+    padding: 15px;
+    margin: 20px 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.wp-blog-series-post-content div {
+    margin-bottom: 10px;
+    font-size: 1em;
+}
+
+.wp-blog-series-post-content a {
+    color: #0073aa;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.wp-blog-series-post-content a:hover {
+    color: #005177;
+}
